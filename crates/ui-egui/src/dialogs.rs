@@ -547,6 +547,11 @@ pub enum Dialog {
     },
     /// Line Numbers, Hyphenation, Language, Envelopes and Labels (#407).
     Layout(Box<crate::dialogs_layout::LayoutDialog>),
+    /// Home › AI (Rewrite, Summarize, Continue) and the AI setup flow ([`crate::ai`]), desktop only.
+    #[cfg(not(target_arch = "wasm32"))]
+    Ai {
+        tool: crate::ai::Tool,
+    },
 }
 
 /// The Table Properties dialog's fields. Lengths are in the interface unit
@@ -1009,6 +1014,8 @@ impl Dialog {
             Dialog::Templates { .. } => "templates",
             Dialog::Organizer { .. } => "organizer",
             Dialog::Layout(d) => d.name(),
+            #[cfg(not(target_arch = "wasm32"))]
+            Dialog::Ai { tool } => tool.dialog_name(),
         }
     }
 
@@ -1467,6 +1474,8 @@ pub fn show(app: &mut WordApp, ctx: &egui::Context) {
         Dialog::Templates { .. } => "Templates and Add-ins",
         Dialog::Organizer { .. } => "Organizer",
         Dialog::Layout(d) => d.title(),
+        #[cfg(not(target_arch = "wasm32"))]
+        Dialog::Ai { tool } => tool.title(),
     };
     let id = egui::Id::new(("dialog", title));
     let window = crate::window_close::window(ctx, egui::Window::new(tl!(title)).id(id).collapsible(false).resizable(false));
@@ -2951,6 +2960,8 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
         Dialog::Templates { form } => crate::dialogs_templates::templates(app, ui, form),
         Dialog::Organizer { form } => crate::dialogs_templates::organizer(app, ui, form),
         Dialog::Layout(d) => crate::dialogs_layout::body(app, ui, d),
+        #[cfg(not(target_arch = "wasm32"))]
+        Dialog::Ai { tool } => crate::ai::body(app, ui, tool),
         Dialog::FindRecipient { text, message } => {
             ui.horizontal(|ui| {
                 ui.label(tl!("Find:"));

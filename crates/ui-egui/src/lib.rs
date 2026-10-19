@@ -22,6 +22,9 @@ macro_rules! tl {
 
 pub mod a11y;
 pub mod a11y_pane;
+/// AI through publik API or the person's own key (#publik), desktop only.
+#[cfg(not(target_arch = "wasm32"))]
+pub mod ai;
 pub mod async_saves;
 pub mod autoscroll;
 pub mod backstage;
@@ -623,6 +626,11 @@ pub struct WordApp {
     no_document: Option<u64>,
     /// Comment and reply text typed but not yet written to the document (#1348).
     pub(crate) comment_drafts: panes::CommentDrafts,
+    /// AI through publik API or the person's own key (desktop only). `None` until the app binary
+    /// installs it, and in runs without preferences (tests, agents), where no AI dialog may
+    /// appear unasked and the Home tab has no AI group.
+    #[cfg(not(target_arch = "wasm32"))]
+    pub ai: Option<ai::Ai>,
 }
 
 /// The answer to "Do you want to save changes?" (`ui.saveChanges`).
@@ -720,6 +728,8 @@ impl WordApp {
             recovery_seen: false,
             no_document: None,
             comment_drafts: Default::default(),
+            #[cfg(not(target_arch = "wasm32"))]
+            ai: None,
         }
     }
 
@@ -946,6 +956,11 @@ impl WordApp {
             if let Err(e) = &r {
                 self.status(e.clone());
             }
+            return r;
+        }
+        // Home › AI: these open their dialogs only; a click there sends the request.
+        #[cfg(not(target_arch = "wasm32"))]
+        if let Some(r) = ai::command(self, id) {
             return r;
         }
         // Web: saving and exporting become downloads.
@@ -2007,6 +2022,8 @@ impl WordApp {
         self.drain_control(ctx);
         zotero::poll(self, ctx);
         read_aloud::poll(self, ctx);
+        #[cfg(not(target_arch = "wasm32"))]
+        ai::frame(self);
         self.clear_stale_change_picture();
         let _ = self.poll_file_dialog();
         self.drain_inbox();

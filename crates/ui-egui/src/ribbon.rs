@@ -1213,6 +1213,16 @@ fn home(app: &mut WordApp, ui: &mut Ui) {
     group(ui, "Editor", None, app, |ui, app| {
         big(ui, app, "editor", "Editor", "review.spelling", json!({}), false);
     });
+    // publik API or the person's own key ([`crate::ai`]): each button opens its dialog, and only
+    // the dialog's own button sends. Runs without the AI step (tests, agents) draw no group.
+    #[cfg(not(target_arch = "wasm32"))]
+    if app.ai.is_some() {
+        group(ui, "AI", None, app, |ui, app| {
+            big(ui, app, "pencil", "Rewrite", "ui.ai.rewrite", json!({}), false);
+            big(ui, app, "toc", "Summarize", "ui.ai.summarize", json!({}), false);
+            big(ui, app, "addText", "Continue", "ui.ai.continue", json!({}), false);
+        });
+    }
 }
 
 fn insert(app: &mut WordApp, ui: &mut Ui) {

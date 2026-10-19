@@ -135,6 +135,19 @@ fn schedule_macos_terminate(app: &WordApp, key_file: Option<&control_server::Key
     });
 }
 
+/// What publik needs to know about this build. The app token is public by design (it can only
+/// mint capped keys attributed to WordCraft) and lives at the repo root so source builds carry it.
+fn app_info() -> wordcraft_ui_egui::ai::AppInfo {
+    wordcraft_ui_egui::ai::AppInfo {
+        slug: "wordcraft",
+        name: "WordCraft",
+        version: env!("CARGO_PKG_VERSION"),
+        app_token: include_str!("../../../publik-app-token.txt"),
+        dialects: &["chat_completions"],
+        config_dir: wordcraft_control_key::settings_dir(),
+    }
+}
+
 /// `ui.json` in the settings folder, which the MCP bridge also uses to find the control key.
 fn prefs_path() -> Option<std::path::PathBuf> {
     wordcraft_control_key::settings_dir().map(|b| b.join("ui.json"))
@@ -355,6 +368,13 @@ fn main() -> eframe::Result {
         let _ = std::io::Write::write_fmt(&mut std::io::stderr(), format_args!("wordcraft: --control needs a port number from 1 to 65535{got}\n"));
         std::process::exit(2);
     }
+    // Builder check (publikhq.com/skills/setup.md): the built app provisions publik API for real
+    // and prints one line, then exits. The builder who runs it is the consent.
+    if std::env::var_os("PUBLIK_SELF_TEST").is_some() {
+        let line = wordcraft_ui_egui::ai::self_test(&app_info());
+        let _ = std::io::Write::write_fmt(&mut std::io::stdout(), format_args!("{line}\n"));
+        return Ok(());
+    }
     // The log file lives in the settings directory, next to the preferences; opened after the
     // arguments, so `--version` leaves no file behind. Records logged until now are written to it
     // first. Runs without preferences (agents' test runs) log to standard error only, so they
@@ -426,6 +446,11 @@ fn main() -> eframe::Result {
             session.system_region = region;
             let mut app = WordApp::new(session, services(file_dialog, &cc.egui_ctx));
             load_prefs(&mut app);
+            // AI through publik API or the person's own key; the first launch asks. Not in runs
+            // without preferences (agents' and tests' runs), where no dialog may appear unasked.
+            if prefs_enabled() {
+                app.ai = Some(wordcraft_ui_egui::ai::Ai::new(app_info()));
+            }
             load_user_dictionary(&mut app);
             // A region chosen in File › Options replaces the system's for the first blank
             // document too (#838).

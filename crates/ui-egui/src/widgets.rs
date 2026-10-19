@@ -130,6 +130,12 @@ fn id_since_focus(resp: &Response) -> Option<f32> {
 fn tooltip(app: &WordApp, resp: Response, label: &str, id: &str) -> Response {
     let spec = app.session.registry.get(id);
     let desc = spec.map(|s| crate::i18n::location(s.location)).unwrap_or_default();
+    // Interface commands the registry doesn't know may describe themselves (Home › AI).
+    #[cfg(not(target_arch = "wasm32"))]
+    let desc = match crate::ai::description(id) {
+        Some(d) if desc.is_empty() => tl!(d).to_string(),
+        _ => desc,
+    };
     // `enabled` also covers what the registry doesn't know (no document open, `ui.*` commands).
     let reason = if enabled(app, id) {
         None
@@ -566,6 +572,7 @@ fn group_icon(title: &str) -> &'static str {
         "Voice" => "dictate",
         "Tables" => "table",
         "Links" => "link",
+        "AI" => "pencil",
         _ => "more",
     }
 }

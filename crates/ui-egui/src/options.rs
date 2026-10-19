@@ -1,8 +1,8 @@
 //! File › Options (#485): a list of panes on the left (General, Display, Proofing, Save,
-//! Language, Accessibility, Advanced, Agents), the chosen pane's settings on the right. Only
-//! settings WordCraft carries out are shown. Each pane is one function below, so a new setting
-//! goes into its pane's function. Settings agents can change too go through `file.options`; the
-//! rest live in [`crate::UiState`] (saved in `ui.json`).
+//! Language, Accessibility, Advanced, Agents, and AI in the desktop app), the chosen pane's
+//! settings on the right. Only settings WordCraft carries out are shown. Each pane is one function
+//! below, so a new setting goes into its pane's function. Settings agents can change too go
+//! through `file.options`; the rest live in [`crate::UiState`] (saved in `ui.json`).
 
 use std::cell::Cell;
 
@@ -101,8 +101,20 @@ fn pane_label(id: &str) -> &'static str {
         "accessibility" => "Accessibility",
         "advanced" => "Advanced",
         "agents" => "Agents",
+        "ai" => "AI",
         _ => "General",
     }
+}
+
+/// The panes in the list: [`PANES`], then AI when this session runs the AI step ([`crate::ai`],
+/// desktop only; runs without preferences don't).
+fn panes(app: &WordApp) -> Vec<&'static str> {
+    let mut v = PANES.to_vec();
+    #[cfg(not(target_arch = "wasm32"))]
+    v.extend(crate::ai::pane(app));
+    #[cfg(target_arch = "wasm32")]
+    let _ = app;
+    v
 }
 
 /// The Options page.
@@ -110,11 +122,12 @@ pub fn page(app: &mut WordApp, ui: &mut Ui) {
     let t = Tokens::get(ui.ctx());
     ui.label(RichText::new(tl!("Options")).font(semibold(26.0)));
     ui.add_space(16.0);
-    let current = if PANES.contains(&app.ui.options_pane.as_str()) { app.ui.options_pane.clone() } else { "general".to_string() };
+    let panes = panes(app);
+    let current = if panes.contains(&app.ui.options_pane.as_str()) { app.ui.options_pane.clone() } else { "general".to_string() };
     ui.horizontal_top(|ui| {
         ui.vertical(|ui| {
             ui.set_width(170.0);
-            for id in PANES {
+            for id in panes {
                 let label = tl!(pane_label(id));
                 let active = current == id;
                 let (r, resp) = ui.allocate_exact_size(vec2(170.0, 30.0), egui::Sense::click());
@@ -146,6 +159,8 @@ pub fn page(app: &mut WordApp, ui: &mut Ui) {
                 "accessibility" => accessibility(app, ui),
                 "advanced" => advanced(app, ui),
                 "agents" => agents(ui),
+                #[cfg(not(target_arch = "wasm32"))]
+                "ai" => crate::ai::options_pane(app, ui),
                 _ => general(app, ui),
             }
         });
