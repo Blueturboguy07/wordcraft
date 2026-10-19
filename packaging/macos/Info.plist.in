@@ -13,7 +13,7 @@
   <key>CFBundleExecutable</key>
   <string>WordCraft</string>
   <key>CFBundleIdentifier</key>
-  <string>ai.storyteller.wordcraft</string>
+  <string>com.publik.wordcraft</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundlePackageType</key>
