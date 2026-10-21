@@ -257,7 +257,6 @@
 	Comment	댓글
 	Comments	댓글
 	Comments Pane	댓글 창
-	Community\nDiscord	커뮤니티\nDiscord
 	Compact	간결하게
 	Compare	비교
 	Compress Pictures	그림 압축
@@ -335,8 +334,6 @@
 	Different First Page	첫 페이지 다르게 지정
 	Different Odd & Even Pages	홀수 페이지와 짝수 페이지 다르게 지정
 	Direct formatting	직접 서식
-	Discord	Discord
-	Discord community	Discord 커뮤니티
 	Display	표시
 	Display for Review	검토용 표시
 	Distribute Columns	열 균등 분할
@@ -498,8 +495,6 @@
 	Inspect Styles at Selection	선택 영역의 스타일 검사
 	Interface language:	인터페이스 언어:
 	Italic	기울임꼴
-	Join the ArtCraft community on Discord	Discord에서 ArtCraft 커뮤니티에 참여하세요
-	Join us on Discord: discord.gg/artcraft	Discord에서 함께하세요: discord.gg/artcraft
 	Justify	양쪽 맞춤
 	Keep Lines Together	현재 단락의 모든 줄을 한 페이지에 유지
 	Keep lines together	현재 단락의 모든 줄을 한 페이지에 유지
@@ -819,7 +814,6 @@
 	Animation	애니메이션
 	Animate the caret (it glides and fades)	커서 애니메이션 (부드럽게 이동하고 희미해짐)
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	사용: 입력하거나 방향키를 누르면 커서가 새 위치로 부드럽게 이동하고 깜박임이 서서히 사라집니다. 사용 안 함: 커서가 바로 이동하고 깜박임이 켜졌다 꺼집니다.
-	Show the community button in the title bar	제목 표시줄에 커뮤니티 단추 표시
 	Show/Hide ¶	¶ 표시/숨기기
 	Show\nComments	메모\n표시
 	Shrink Font 1 Point	글꼴 크기 1포인트 줄이기

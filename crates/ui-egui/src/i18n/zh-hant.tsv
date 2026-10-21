@@ -289,7 +289,6 @@
 	Comment	註解
 	Comments	註解
 	Comments Pane	註解窗格
-	Community\nDiscord	社群\nDiscord
 	Compact	緊密
 	Compare	比較
 	Compress Pictures	壓縮圖片
@@ -344,8 +343,6 @@
 	Dictate	聽寫
 	Different First Page	首頁不同
 	Different Odd & Even Pages	奇偶頁不同
-	Discord	Discord
-	Discord community	Discord 社群
 	Display	顯示
 	Display for Review	顯示以供檢閱
 	Distribute Columns	平均分配欄寬
@@ -504,8 +501,6 @@
 	Inspect Document	檢查文件
 	Interface language:	介面語言：
 	Italic	斜體
-	Join the ArtCraft community on Discord	加入 Discord 上的 ArtCraft 社群
-	Join us on Discord: discord.gg/artcraft	在 Discord 上加入我們：discord.gg/artcraft
 	Justify	左右對齊
 	Keep Lines Together	段落中不分頁
 	Keep lines together	段落中不分頁
@@ -815,7 +810,6 @@
 	Animation	動畫
 	Animate the caret (it glides and fades)	為游標加上動畫（平滑移動並淡入淡出）
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	開啟：輸入或使用方向鍵時，游標會平滑移動到新位置，閃爍時淡入淡出。關閉：游標直接跳到新位置，閃爍時直接顯示和隱藏。
-	Show the community button in the title bar	在標題列中顯示社群按鈕
 	Show/Hide ¶	顯示/隱藏 ¶
 	Show\nComments	顯示註解
 	Shrink Font 1 Point	字型縮小 1 點

@@ -300,7 +300,6 @@
 	Comment	批注
 	Comments	批注
 	Comments Pane	批注窗格
-	Community\nDiscord	社区\nDiscord
 	Compact	紧凑
 	Compare	比较
 	Compress Pictures	压缩图片
@@ -355,8 +354,6 @@
 	Dictate	听写
 	Different First Page	首页不同
 	Different Odd & Even Pages	奇偶页不同
-	Discord	Discord
-	Discord community	Discord 社区
 	Display	显示
 	Display for Review	显示以供审阅
 	Distribute Columns	平均分布各列
@@ -515,8 +512,6 @@
 	Inspect Document	检查文档
 	Interface language:	界面语言：
 	Italic	倾斜
-	Join the ArtCraft community on Discord	加入 Discord 上的 ArtCraft 社区
-	Join us on Discord: discord.gg/artcraft	在 Discord 上加入我们：discord.gg/artcraft
 	Justify	两端对齐
 	Keep Lines Together	段中不分页
 	Keep lines together	段中不分页
@@ -826,7 +821,6 @@
 	Animation	动画
 	Animate the caret (it glides and fades)	为光标添加动画（平滑移动并淡入淡出）
 	On: the caret glides to its new place when you type or use the arrow keys, and its blink fades. Off: it jumps and blinks on and off.	开启：输入或使用方向键时，光标平滑移动到新位置，闪烁时淡入淡出。关闭：光标直接跳转，闪烁时直接显示和隐藏。
-	Show the community button in the title bar	在标题栏中显示社区按钮
 	Show/Hide ¶	显示/隐藏 ¶
 	Show\nComments	显示批注
 	Shrink Font 1 Point	字号减小 1 磅

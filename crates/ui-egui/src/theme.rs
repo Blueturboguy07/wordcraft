@@ -912,8 +912,8 @@ mod tests {
         assert!(semi.iter().any(|n| n.starts_with("fallback ")), "the caption is painted with semibold");
     }
 
-    /// #656: dialog primary buttons, the Discord pill, the table eraser and the Navigation search
-    /// highlight take their colours from the theme, not fixed light-theme values.
+    /// #656: dialog primary buttons, the table eraser and the Navigation search highlight take
+    /// their colours from the theme, not fixed light-theme values.
     #[test]
     fn interface_colours_come_from_the_theme() {
         let banned = ["fill(crate::theme::APP_COLOR)", "0x58, 0x65, 0xF2", "0x47, 0x52, 0xC4", "0xFF, 0xF1, 0x76", "0xD1, 0x3B, 0x3B"];
