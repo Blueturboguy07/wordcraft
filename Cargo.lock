@@ -5291,6 +5291,7 @@ version = "0.8.0"
 dependencies = [
  "serde_json",
  "sys-locale",
+ "ureq",
  "wordcraft-doc",
  "wordcraft-engine",
  "wordcraft-mcp",
