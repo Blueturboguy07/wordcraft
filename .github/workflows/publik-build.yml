@@ -37,8 +37,28 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: storytold/craft-fonts
-          ref: 8dcdacd5153e64560d109541a47d806f26f048c0
+          ref: b076417b5880bd4154bd22f00695b1d28c6bea83
           path: craft-fonts
+      # The interface translations and the proofing language data (same pin as upstream's release:
+      # craft-i18n.rev). crates/ui-egui/build.rs and craft-proof embed them from CRAFT_I18N_DIR;
+      # CRAFT_I18N_REQUIRED=1 makes the build fail without them, as upstream's release does.
+      - name: Read craft-i18n.rev
+        id: i18n
+        run: |
+          rev="$(tr -d '[:space:]' < craft-i18n.rev)"
+          [[ "$rev" =~ ^[0-9a-f]{40}$ ]] || { echo "::error file=craft-i18n.rev::expected one 40-character SHA, found '$rev'"; exit 1; }
+          echo "rev=$rev" >> "$GITHUB_OUTPUT"
+      - name: Check out craft-i18n
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: storytold/craft-i18n
+          ref: ${{ steps.i18n.outputs.rev }}
+          path: craft-i18n
+          persist-credentials: false
+      - name: Use craft-i18n in the build
+        run: |
+          echo "CRAFT_I18N_DIR=$GITHUB_WORKSPACE/craft-i18n" >> "$GITHUB_ENV"
+          echo "CRAFT_I18N_REQUIRED=1" >> "$GITHUB_ENV"
       - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
         with:
           toolchain: stable
@@ -47,6 +67,15 @@ jobs:
         with:
           key: publik-build-macos-universal
           cache-on-failure: true
+      # The publik AI step (crates/ui-egui/src/ai.rs: Home › AI, File › Options › AI, the dialogs) and
+      # the two upstream tests the publik changes touch (no Discord command, the Options page). The job
+      # fails here, before packaging, when the port broke them. .cargo/config.toml sets DO_NOT_TRACK=1.
+      - name: Test the publik AI step
+        run: |
+          cargo test --locked -p wordcraft-ui-egui --lib -- \
+            ai::tests:: \
+            tests::start_screen_shows_file_home_and_esc_leaves_no_document \
+            tests::the_default_app_button_shows_only_with_the_hosts_hook
       - name: Build and package (ad-hoc signature, no notarization)
         run: |
           # The short commit, as publik's earlier builds carry it (<APP>_BUILD_SHA).
@@ -76,7 +105,8 @@ jobs:
             echo "commit=$(git rev-parse HEAD)"
             echo "build_sha=$(git rev-parse --short HEAD)"
             echo "publik_build=$(tr -d '[:space:]' < packaging/PUBLIK_BUILD)"
-            echo "fonts_ref=8dcdacd5153e64560d109541a47d806f26f048c0"
+            echo "fonts_ref=b076417b5880bd4154bd22f00695b1d28c6bea83"
+            echo "i18n_ref=${{ steps.i18n.outputs.rev }}"
             echo "runner=$(sw_vers -productName) $(sw_vers -productVersion) $(uname -m)"
             echo "rustc=$(rustc -V)"
             echo "cargo=$(cargo -V)"

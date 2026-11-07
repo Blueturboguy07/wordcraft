@@ -11,7 +11,7 @@ on:
         default: ""
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: release-${{ github.ref }}
@@ -19,13 +19,18 @@ concurrency:
 
 jobs:
   release:
+    # Only this job publishes the GitHub release, so only it gets write access.
+    permissions:
+      contents: write
+      packages: write
     # publik's trimmed copy of storytold/craft-common-actions (free macOS runner, Windows x64 only,
     # Linux and Flatpak off). Tracked at @main like upstream.
     uses: Blueturboguy07/craft-common-actions/.github/workflows/release.yml@main
     with:
       app-name: wordcraft
       app-title: WordCraft
-      craft-fonts-ref: 8dcdacd5153e64560d109541a47d806f26f048c0
+      craft-fonts-ref: b076417b5880bd4154bd22f00695b1d28c6bea83
+      web-craft-fonts: true
       version: ${{ inputs.version }}
       # publik has no Windows certificate yet: the x64 build ships unsigned and says so.
       windows-signing-required: false
