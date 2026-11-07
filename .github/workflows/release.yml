@@ -19,6 +19,9 @@ concurrency:
 
 jobs:
   release:
+    # Never for a publik ref (a manual run can pick the tag v*-publik.*): publik signs on its own Mac
+    # and uploads to that release itself, and a run here could upload files into it.
+    if: ${{ !contains(github.ref, '-publik') }}
     # Only this job publishes the GitHub release, so only it gets write access.
     permissions:
       contents: write
