@@ -196,9 +196,12 @@ pub fn frame(app: &mut WordApp) {
     ai.summarize.poll(&mut ai.state);
     ai.cont.poll(&mut ai.state);
     ai.frames = ai.frames.saturating_add(1);
-    // The first launch asks once the window is up (a few frames in). "Later" ends that for good.
-    if !ai.first_run_checked && ai.frames > 3 {
+    // The first launch asks once the publik gate passed and the window is up (a few frames in):
+    // after "Use my own key" at the gate, the own-key form. "Later" ends that for good. This
+    // crate's own tests run without a gate, so it counts as passed there.
+    if !ai.first_run_checked && ai.frames > 3 && (cfg!(test) || craft_publik::gate::passed()) {
         ai.first_run_checked = true;
+        ai.state.reload_credential(); // the gate wrote it after this state was created
         if ai.state.wants_first_run() || ai.state.owes_first_card() {
             ai.open_setup = true;
         }
@@ -243,7 +246,7 @@ pub fn body(app: &mut WordApp, ui: &mut Ui, tool: &mut Tool) -> bool {
     ui.set_max_width(480.0);
     let provider = ai.state.provider();
     if !provider.is_set_up() {
-        ui.label(tl!("This tool needs AI. Set it up first: publik API (no key to paste) or your own key."));
+        ui.label(tl!("This tool needs AI. Set it up first: connect your publik plan (no key to paste) or use your own key."));
         ui.add_space(6.0);
         if ui.button(tl!("Set up AI…")).clicked() {
             ai.state.begin();
@@ -634,6 +637,8 @@ mod tests {
             name: "WordCraft",
             version: "0.0.0",
             app_token: "",
+            uses_ai: true,
+            endpoints: craft_publik::Endpoints::DEFAULT,
             dialects: &["chat_completions"],
             config_dir: Some(dir.clone()),
         };

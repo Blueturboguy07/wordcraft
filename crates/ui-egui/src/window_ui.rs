@@ -172,7 +172,7 @@ impl WordApp {
             packs_rt: _,
             // publik's AI step: one for the app.
             #[cfg(not(target_arch = "wasm32"))]
-            ai: _,
+                ai: _,
             // The control channel's screenshots and input go to the active window, whichever it is.
             shots: _,
             capture_epoch: _,

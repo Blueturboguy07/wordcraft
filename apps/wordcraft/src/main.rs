@@ -20,12 +20,12 @@ mod file_dialogs;
 mod graphics;
 mod logging;
 mod print;
+// Sign in with publik, usage counting and the AI pay choice: this build's publik facts and the
+// gate every publik app opens with.
+mod publik;
 mod region;
 #[cfg(target_os = "macos")]
 mod traffic_lights;
-// publik's usage counts (README: Usage counts). The file is publik's reference client, kept as it is.
-#[rustfmt::skip]
-mod publik_telemetry;
 
 use wordcraft_engine::Session;
 use wordcraft_ui_egui::{
@@ -35,8 +35,8 @@ use wordcraft_ui_egui::{
 
 /// The app, the restored window geometry (or, with none, the default: no position) until the
 /// first frame that knows the monitor has checked it, the control server's key file (removed on
-/// exit), the file dialogs the app asked for, this frame's raw host window state and, on macOS,
-/// the documents opened from Finder.
+/// exit), the file dialogs the app asked for, this frame's raw host window state, the publik gate
+/// and, on macOS, the documents opened from Finder.
 struct App(
     WordApp,
     Option<WindowGeometry>,
@@ -45,6 +45,8 @@ struct App(
     // The host's answer for this frame. `InputState` still describes the last painted frame on
     // a hidden logic tick.
     RawWindowState,
+    /// Sign in with publik: drawn before anything of the app until it passes.
+    craft_publik::ui::Gate,
     #[cfg(target_os = "macos")] fmv_macos_events::Inbox,
 );
 
@@ -54,7 +56,7 @@ impl eframe::App for App {
     /// on unsaved changes and active printing.
     fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
         #[cfg(target_os = "macos")]
-        apple_events::poll(&self.5, &mut self.0, ctx);
+        apple_events::poll(&self.6, &mut self.0, ctx);
         self.0.logic(ctx);
         self.3.show(frame);
         let mut window = self.4;
@@ -122,6 +124,11 @@ impl eframe::App for App {
         self.0.raw_input_hook(ctx, raw);
     }
     fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
+        // Sign in with publik comes first: the gate draws itself until the person is signed in
+        // (and, the first time, has chosen how the app pays for AI). Nothing of the app shows before.
+        if !self.5.ui(ui) {
+            return;
+        }
         self.0.ui(ui);
         self.3.show(frame);
     }
@@ -199,19 +206,6 @@ fn schedule_macos_terminate(app: &mut WordApp, key_file: Option<&control_server:
         // staying up after the close was cancelled would trap the user in the window.
         std::process::exit(0);
     });
-}
-
-/// What publik needs to know about this build. The app token is public by design (it can only
-/// mint capped keys attributed to WordCraft) and lives at the repo root so source builds carry it.
-fn app_info() -> wordcraft_ui_egui::ai::AppInfo {
-    wordcraft_ui_egui::ai::AppInfo {
-        slug: "wordcraft",
-        name: "WordCraft",
-        version: env!("CARGO_PKG_VERSION"),
-        app_token: include_str!("../../../publik-app-token.txt"),
-        dialects: &["chat_completions"],
-        config_dir: wordcraft_control_key::settings_dir(),
-    }
 }
 
 /// `ui.json` in the settings folder, which the MCP bridge also uses to find the control key.
@@ -452,12 +446,6 @@ fn open_non_unicode(app: &mut WordApp, path: &std::path::Path) {
     }
 }
 
-/// The version in publik's usage counts: the release tag without its `v`, for example `0.9.0-publik.4`.
-/// The build number comes from `packaging/PUBLIK_BUILD`, the file the bundle version comes from.
-fn publik_version() -> String {
-    format!("{}-publik.{}", env!("CARGO_PKG_VERSION"), include_str!("../../../packaging/PUBLIK_BUILD").trim())
-}
-
 /// Parses the command line, installs logging and the panic hook, restores preferences and window
 /// geometry, opens requested documents or the Start screen, starts the control server when
 /// asked, and runs the eframe event loop.
@@ -514,13 +502,13 @@ fn main() -> eframe::Result {
     // Builder check (publikhq.com/skills/setup.md): the built app provisions publik API for real
     // and prints one line, then exits. The builder who runs it is the consent.
     if std::env::var_os("PUBLIK_SELF_TEST").is_some() {
-        let line = wordcraft_ui_egui::ai::self_test(&app_info());
+        let line = craft_publik::self_test(&publik::app_info());
         let _ = std::io::Write::write_fmt(&mut std::io::stdout(), format_args!("{line}\n"));
         return Ok(());
     }
-    // publik's usage counts: `app_opened` now, `active_session` every 30 minutes, on a background
-    // thread. After the early exits above, so `--version` and the self-test send nothing.
-    publik_telemetry::start("wordcraft", &publik_version(), None);
+    // publik's usage counts (`app_opened` now, `active_session` every 30 minutes) start once the
+    // gate passed (`publik::app_info`, `craft_publik::ui::Gate`), so `--version` and the self-test
+    // send nothing.
     // The log file lives in the settings directory, next to the preferences; opened after the
     // arguments, so `--version` leaves no file behind. Records logged until now are written to it
     // first. Runs without preferences (agents' test runs) log to standard error only, so they
@@ -604,7 +592,7 @@ fn main() -> eframe::Result {
             // AI through publik API or the person's own key; the first launch asks. Not in runs
             // without preferences (agents' and tests' runs), where no dialog may appear unasked.
             if prefs_enabled() {
-                app.ai = Some(wordcraft_ui_egui::ai::Ai::new(app_info()));
+                app.ai = Some(wordcraft_ui_egui::ai::Ai::new(publik::app_info()));
             }
             load_user_dictionary(&mut app);
             // Language packs from the suite's font store; an Install click is the person's own.
@@ -660,6 +648,8 @@ fn main() -> eframe::Result {
                 key_file,
                 dialogs,
                 RawWindowState::default(),
+                // Sign in with publik: provisioning starts now, on a worker thread; `ui` draws it.
+                craft_publik::ui::Gate::new(publik::app_info()),
                 #[cfg(target_os = "macos")]
                 apple_events.connect(&cc.egui_ctx),
             )))
